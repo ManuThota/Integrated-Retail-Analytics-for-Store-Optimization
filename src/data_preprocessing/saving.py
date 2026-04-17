@@ -1,44 +1,34 @@
 """
 saving.py
 
-Handles saving of datasets:
-- Interim data (after merging)
-- Processed data (after cleaning + feature engineering)
-
-This improves:
-- Reproducibility
-- Debugging
-- Pipeline efficiency
+Handles saving of datasets at different stages:
+- Interim (after merging & basic cleaning)
+- Processed (after full preprocessing)
 """
-#============================================================
+#==============================================
 # Importing Libraries
-#============================================================
+#==============================================
 import pandas as pd
-from src.config.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR
-
+from pathlib import Path
+from src.config.config import INTERIM_DATA_DIR
 
 #===================================================================================
-# Saving Interim Data
+# Saving the Merging Data
 #===================================================================================
 def save_interim_data(df: pd.DataFrame, filename: str = "merged_data.csv") -> None:
     """
-    Saves merged (intermediate) dataset.
+    Saves interim dataset after merging and initial cleaning.
+
+    Args:
+        df (pd.DataFrame): Data to save
+        filename (str): File name
     """
 
-    path = INTERIM_DATA_DIR / filename
-    df.to_csv(path, index=False)
+    output_path = INTERIM_DATA_DIR / filename
 
-    print(f"(✓) -> Interim data saved at: {path}")
+    # Ensure directory exists
+    INTERIM_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-#===================================================================================
-# Saving Processed Data
-#===================================================================================    
-def save_processed_data(df: pd.DataFrame, filename: str = "processed_data.csv") -> None:
-    """
-    Saves fully processed dataset.
-    """
+    df.to_csv(output_path, index=False)
 
-    path = PROCESSED_DATA_DIR / filename
-    df.to_csv(path, index=False)
-
-    print(f"(✓) -> Processed data saved at: {path}")
+    print(f"(✓) -> Interim data saved at: {output_path}")
