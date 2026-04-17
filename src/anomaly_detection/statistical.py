@@ -3,26 +3,29 @@ statistical.py
 
 Handles statistical anomaly detection:
 - IQR-based outlier detection
-- Optional outlier treatment
+- Outlier removal (as per project notebook approach)
 """
 
 import pandas as pd
 
 
-def detect_outliers_iqr(df: pd.DataFrame, column: str = "Weekly_Sales") -> pd.DataFrame:
+def remove_outliers_iqr(df: pd.DataFrame, column: str = "Weekly_Sales") -> pd.DataFrame:
     """
-    Detects outliers using IQR method and flags them.
+    Removes outliers using IQR method.
 
     Args:
         df (pd.DataFrame): Input dataframe
-        column (str): Column to analyze
+        column (str): Target column for outlier detection
 
     Returns:
-        pd.DataFrame: Dataframe with anomaly flag
+        pd.DataFrame: Cleaned dataframe (outliers removed)
     """
 
     df = df.copy()
 
+    # ----------------------------------------------------
+    # Step 1: Calculate IQR
+    # ----------------------------------------------------
     Q1 = df[column].quantile(0.25)
     Q3 = df[column].quantile(0.75)
     IQR = Q3 - Q1
@@ -30,38 +33,23 @@ def detect_outliers_iqr(df: pd.DataFrame, column: str = "Weekly_Sales") -> pd.Da
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
 
-    # Create anomaly flag column
-    df["Anomaly"] = ((df[column] < lower_bound) | (df[column] > upper_bound)).astype(int)
+    print(f"(✓) -> IQR bounds calculated: [{lower_bound:.2f}, {upper_bound:.2f}]")
 
-    anomaly_count = df["Anomaly"].sum()
+    # ----------------------------------------------------
+    # Step 2: Count outliers
+    # ----------------------------------------------------
+    before_count = df.shape[0]
 
-    print(f"(✓) -> IQR bounds: [{lower_bound:.2f}, {upper_bound:.2f}]")
-    print(f"(✓) -> Total anomalies detected: {anomaly_count}")
+    df_cleaned = df[
+        (df[column] >= lower_bound) &
+        (df[column] <= upper_bound)
+    ]
 
-    return df
+    after_count = df_cleaned.shape[0]
 
+    removed = before_count - after_count
 
-def cap_outliers(df: pd.DataFrame, column: str = "Weekly_Sales") -> pd.DataFrame:
-    """
-    Caps extreme values using IQR bounds.
+    print(f"(✓) -> Outliers removed: {removed}")
+    print(f"(✓) -> Remaining data shape: {df_cleaned.shape}")
 
-    This stabilizes the dataset for ML models.
-
-    Returns:
-        pd.DataFrame
-    """
-
-    df = df.copy()
-
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
-
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-
-    df[column] = df[column].clip(lower=lower_bound, upper=upper_bound)
-
-    print("(✓) -> Outliers capped using IQR method")
-
-    return df
+    return df_cleaned
