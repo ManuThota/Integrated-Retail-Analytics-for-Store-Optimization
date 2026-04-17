@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
-from src.config.config import INTERIM_DATA_DIR
+from src.config.config import PROCESSED_DATA_DIR
 
 from src.feature_engineering.encoding import encode_categorical
 from src.feature_engineering.feature_builder import (
@@ -26,7 +26,7 @@ def test_feature_engineering():
 
     print("\n==========( Feature Engineering Test Started )==========\n")
 
-    file_path = INTERIM_DATA_DIR / "merged_data.csv"
+    file_path = PROCESSED_DATA_DIR / "merged_data.csv"
 
     if not file_path.exists():
         raise FileNotFoundError("(✕) -> Run preprocessing first")
