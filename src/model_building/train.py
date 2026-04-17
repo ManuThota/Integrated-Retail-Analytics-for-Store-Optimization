@@ -21,7 +21,7 @@ def split_data(df: pd.DataFrame, target_column: str = "Weekly_Sales"):
         X_train, X_test, y_train, y_test
     """
 
-    X = df.drop(columns=[target_column])
+    X = df.drop(columns=['Weekly_Sales', 'Weekly_Sales_Log'])
     y = df[target_column]
 
     X_train, X_test, y_train, y_test = train_test_split(
