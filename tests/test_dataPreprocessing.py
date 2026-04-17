@@ -103,11 +103,17 @@ def test_data_preprocessing_pipeline():
         print("(✓) -> Holiday column fix test passed\n")
 
         # ----------------------------------------------------
-        # Step 6: Save Interim Data
+        # Step 6: Save Data (Interim + Processed)
         # ----------------------------------------------------
-        save_interim_data(final_df)
+        from src.data_preprocessing.saving import save_processed_data
 
-        print("(✓) -> Interim data saving test passed\n")
+        # Save interim (already exists earlier in your flow)
+        save_interim_data(merged_df)
+
+        # Save processed
+        save_processed_data(final_df)
+
+        print("(✓) -> Data saving (interim + processed) test passed\n")
 
         # ----------------------------------------------------
         # Final Success
