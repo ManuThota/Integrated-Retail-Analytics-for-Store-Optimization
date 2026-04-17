@@ -69,9 +69,3 @@ TARGET_COLUMN = "Weekly_Sales"
 
 # Time-based features
 TIME_FEATURES = ["Year", "Month", "Week"]
-
-# ============================================================
-# Logging Settings
-# ============================================================
-
-LOG_FILE = BASE_DIR / "logs.txt"
