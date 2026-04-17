@@ -3,66 +3,62 @@ cleaning.py
 
 Handles:
 - Missing values
-- Duplicate removal
-- Outlier treatment
-
-This ensures clean and reliable data for downstream tasks.
-
+- MarkDown handling
+- Duplicate column fixes (IsHoliday_x, IsHoliday_y)
 """
-#========================
+#=====================
 # Importing Libraries
-#========================
+#=====================
 import pandas as pd
-import numpy as np
 
 #============================================================
-# Handles Missing Values
+# Handling Missing Values
 #============================================================
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Handles missing values:
-    - Numerical → median
-    - Categorical → 'Unknown'
+    Handles missing values in the dataset.
+
+    Strategy:
+    - MarkDown columns → fill with 0 (No promotion assumption)
     """
 
-    for col in df.columns:
-        if df[col].dtype == "object":
-            df[col].fillna("Unknown", inplace=True)
-        else:
-            df[col].fillna(df[col].median(), inplace=True)
+    df = df.copy()
+
+    print("Missing values before cleaning:\n", df.isnull().sum())
+
+    # Identify MarkDown columns
+    markdown_cols = [col for col in df.columns if "MarkDown" in col]
+
+    # Fill MarkDown missing values with 0
+    df[markdown_cols] = df[markdown_cols].fillna(0)
+
+    print("(✓) -> Missing values in MarkDown columns handled (filled with 0)")
 
     return df
 
 #============================================================
-# Removes Duplicate values
+# Fixing the Duplicate Holiday column
 #============================================================
-def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+def fix_holiday_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Removes duplicate rows.
-    """
-    initial_shape = df.shape
-    df = df.drop_duplicates()
-    print(f"🧹 Removed duplicates: {initial_shape[0] - df.shape[0]}")
-    return df
+    Handles duplicate holiday columns after merge.
 
-
-#=====================================================================
-# Handles Outliers
-#=====================================================================
-def treat_outliers_iqr(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    """
-    Treats outliers using IQR method (capping).
+    Keeps one IsHoliday column and removes duplicates.
     """
 
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
+    df = df.copy()
 
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
+    # Check if both columns exist
+    if "IsHoliday_x" in df.columns and "IsHoliday_y" in df.columns:
 
-    df[column] = np.clip(df[column], lower, upper)
+        print("Found duplicate holiday columns. Fixing...")
 
-    print(f"(✓) -> Outliers treated for: {column}")
+        # Keep one column (they are usually identical)
+        df["IsHoliday"] = df["IsHoliday_x"]
+
+        # Drop duplicates
+        df.drop(columns=["IsHoliday_x", "IsHoliday_y"], inplace=True)
+
+        print("Duplicate holiday columns resolved")
 
     return df
