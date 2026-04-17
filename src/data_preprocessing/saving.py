@@ -1,34 +1,67 @@
 """
 saving.py
 
-Handles saving of datasets at different stages:
-- Interim (after merging & basic cleaning)
-- Processed (after full preprocessing)
+Handles saving datasets at different pipeline stages:
+
+1. Interim Data:
+   - After merging datasets
+   - Before cleaning
+
+2. Processed Data:
+   - After cleaning and preprocessing
+   - Ready for feature engineering / modeling
 """
-#==============================================
-# Importing Libraries
-#==============================================
+
 import pandas as pd
 from pathlib import Path
-from src.config.config import INTERIM_DATA_DIR
 
-#===================================================================================
-# Saving the Merging Data
-#===================================================================================
+from src.config.config import (
+    INTERIM_DATA_DIR,
+    PROCESSED_DATA_DIR
+)
+
+
+# ============================================================
+# Save Interim Data
+# ============================================================
+
 def save_interim_data(df: pd.DataFrame, filename: str = "merged_data.csv") -> None:
     """
-    Saves interim dataset after merging and initial cleaning.
+    Saves merged dataset (before cleaning).
 
     Args:
-        df (pd.DataFrame): Data to save
-        filename (str): File name
+        df (pd.DataFrame): Merged dataframe
+        filename (str): Output file name
     """
-
-    output_path = INTERIM_DATA_DIR / filename
 
     # Ensure directory exists
     INTERIM_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    df.to_csv(output_path, index=False)
+    file_path = INTERIM_DATA_DIR / filename
 
-    print(f"(✓) -> Interim data saved at: {output_path}")
+    df.to_csv(file_path, index=False)
+
+    print(f"(✓) -> Interim data saved at: {file_path}")
+
+
+# ============================================================
+# Save Processed Data
+# ============================================================
+
+def save_processed_data(df: pd.DataFrame, filename: str = "processed_data.csv") -> None:
+    """
+    Saves cleaned and preprocessed dataset.
+
+    Args:
+        df (pd.DataFrame): Cleaned dataframe
+        filename (str): Output file name
+    """
+
+    # Ensure directory exists
+    PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    file_path = PROCESSED_DATA_DIR / filename
+
+    df.to_csv(file_path, index=False)
+
+    print(f"(✓) -> Processed data saved at: {file_path}")
