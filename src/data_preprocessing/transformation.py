@@ -1,41 +1,39 @@
 """
 transformation.py
 
-Handles:
-- Date conversion
-- Feature engineering (Year, Month, Week)
-
+Handles data transformations such as:
+- Converting date columns to datetime
+- Extracting time-based features
 """
-#=======================
-# # Importing Linraries
-#=======================
+#=====================
+# Importing Libraries
+#=====================
 import pandas as pd
 
-#===========================================================================
-# Converting Date Column
-#===========================================================================
-def convert_date(df: pd.DataFrame, column: str = "Date") -> pd.DataFrame:
+#==============================================================================
+# Convert Date column
+#==============================================================================
+def convert_date(df: pd.DataFrame, date_column: str = "Date") -> pd.DataFrame:
     """
-    Converts Date column to datetime format.
-    """
-    df[column] = pd.to_datetime(df[column], errors="coerce")
-    return df
+    Converts the Date column to datetime format.
 
-#================================================================================
-# Creating Time Features
-#================================================================================
-def create_time_features(df: pd.DataFrame, column: str = "Date") -> pd.DataFrame:
-    """
-    Creates time-based features:
-    - Year
-    - Month
-    - Week
+    Args:
+        df (pd.DataFrame): Input dataframe
+        date_column (str): Name of date column
+
+    Returns:
+        pd.DataFrame: Updated dataframe
     """
 
-    df["Year"] = df[column].dt.year
-    df["Month"] = df[column].dt.month
-    df["Week"] = df[column].dt.isocalendar().week.astype(int)
+    df = df.copy()
 
-    print("(✓) -> Time features created")
+    # Convert to datetime
+    df[date_column] = pd.to_datetime(df[date_column], errors="coerce")
+
+    # Check for invalid conversions
+    if df[date_column].isnull().sum() > 0:
+        print("(✕) -> Warning: Some dates could not be converted and are NaT")
+
+    print("(✓) -> Date column converted to datetime")
 
     return df
