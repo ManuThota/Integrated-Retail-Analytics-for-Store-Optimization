@@ -32,7 +32,9 @@ from src.config.config import PROCESSED_DATA_DIR
 from src.feature_engineering.encoding import encode_categorical
 from src.feature_engineering.feature_builder import (
     create_time_features,
-    create_ml_dataset
+    create_ml_dataset,
+    handle_negative_sales,
+    create_log_target
 )
 
 from src.model_building.train import split_data, train_random_forest
@@ -69,7 +71,9 @@ def test_model_pipeline():
         # ----------------------------------------------------
         df = encode_categorical(df)
         df = create_time_features(df)
-
+        df = handle_negative_sales(df)   
+        df = create_log_target(df)
+        
         df_ml = create_ml_dataset(df)
 
         assert "Weekly_Sales" in df_ml.columns, "(✕) -> Target column missing"

@@ -8,7 +8,46 @@ Handles feature creation and dataset preparation:
 """
 
 import pandas as pd
+import numpy as np
 
+
+def handle_negative_sales(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes rows where Weekly_Sales is negative.
+
+    This ensures:
+    - Valid log transformation
+    - Clean target distribution
+    """
+
+    df = df.copy()
+
+    negative_count = (df["Weekly_Sales"] < 0).sum()
+
+    print(f"(✓) -> Negative sales detected: {negative_count}")
+
+    df = df[df["Weekly_Sales"] >= 0]
+
+    print(f"(✓) -> Negative sales removed | New shape: {df.shape}")
+
+    return df
+
+
+def create_log_target(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Creates log-transformed target variable.
+
+    Adds:
+    - Weekly_Sales_Log
+    """
+
+    df = df.copy()
+
+    df["Weekly_Sales_Log"] = np.log1p(df["Weekly_Sales"])
+
+    print("(✓) -> Log transformation applied on target")
+
+    return df
 
 def create_time_features(df: pd.DataFrame) -> pd.DataFrame:
     """
