@@ -26,7 +26,7 @@ def test_feature_engineering():
 
     print("\n==========( Feature Engineering Test Started )==========\n")
 
-    file_path = PROCESSED_DATA_DIR / "merged_data.csv"
+    file_path = PROCESSED_DATA_DIR / "processed_data.csv"
 
     if not file_path.exists():
         raise FileNotFoundError("(✕) -> Run preprocessing first")
