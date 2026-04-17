@@ -78,7 +78,7 @@ def validate_dataframe(df: pd.DataFrame, name: str) -> None:
         raise ValueError(f"(▲) -> {name} is empty!")
 
     print(f"(✓) -> {name} validation passed")
-    print(f"   Columns: {list(df.columns)}\n")
+    print(f"Columns: {list(df.columns)}\n")
 
 
 #==================================================
