@@ -57,7 +57,7 @@ def test_model_pipeline():
         # ----------------------------------------------------
         # Step 1: Load Data
         # ----------------------------------------------------
-        file_path = PROCESSED_DATA_DIR / "processed_data.csv"
+        file_path = PROCESSED_DATA_DIR / "ml_dataset.csv"
 
         if not file_path.exists():
             raise FileNotFoundError("(✕) -> Run preprocessing first")
