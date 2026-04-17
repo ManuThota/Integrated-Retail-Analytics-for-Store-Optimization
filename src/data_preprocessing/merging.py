@@ -1,33 +1,47 @@
 """
 merging.py
 
-Handles merging of datasets:
-- Sales
-- Stores
-- Features
-
-Ensures proper relational joins.
+Handles merging of:
+- Sales data
+- Store data
+- External features data
 """
-#====================
+#=====================
 # Importing Libraries
-#====================
+#=====================
 import pandas as pd
 
-
-#====================================================================
-# Merging Datasets
-#====================================================================
-def merge_datasets(sales_df, stores_df, features_df) -> pd.DataFrame:
+#============================================================
+# Merging the Datasets
+#============================================================
+def merge_datasets(sales_df: pd.DataFrame,
+                   stores_df: pd.DataFrame,
+                   features_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Merges all datasets on Store and Date.
+    Merges sales, stores, and features datasets.
+
+    Returns:
+        pd.DataFrame: Merged dataframe
     """
 
-    # Merge sales with stores
-    df = pd.merge(sales_df, stores_df, on="Store", how="left")
+    print("Merging datasets...")
 
-    # Merge with external features
-    df = pd.merge(df, features_df, on=["Store", "Date"], how="left")
+    # Merge sales + features on Store & Date
+    df = pd.merge(
+        sales_df,
+        features_df,
+        on=["Store", "Date"],
+        how="left"
+    )
 
-    print(f"🔗 Merged dataset shape: {df.shape}")
+    # Merge with store data
+    df = pd.merge(
+        df,
+        stores_df,
+        on="Store",
+        how="left"
+    )
+
+    print(f"(✓) -> Merging completed | Shape: {df.shape}")
 
     return df
