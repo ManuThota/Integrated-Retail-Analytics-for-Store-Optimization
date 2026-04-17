@@ -14,26 +14,23 @@ import pandas as pd
 # Convert Date column
 #==============================================================================
 def convert_date(df: pd.DataFrame, date_column: str = "Date") -> pd.DataFrame:
-    """
-    Converts the Date column to datetime format.
-
-    Args:
-        df (pd.DataFrame): Input dataframe
-        date_column (str): Name of date column
-
-    Returns:
-        pd.DataFrame: Updated dataframe
-    """
-
     df = df.copy()
 
-    # Convert to datetime
-    df[date_column] = pd.to_datetime(df[date_column], errors="coerce")
+    # Convert with strict format 
+    df[date_column] = pd.to_datetime(
+        df[date_column],
+        format="%d-%m-%Y",   
+        errors="coerce"
+    )
 
-    # Check for invalid conversions
-    if df[date_column].isnull().sum() > 0:
-        print("(✕) -> Warning: Some dates could not be converted and are NaT")
+    # Drop invalid dates 
+    before = len(df)
+    df = df.dropna(subset=[date_column])
+    after = len(df)
 
-    print("(✓) -> Date column converted to datetime")
+    if before != after:
+        print(f"Dropped {before - after} rows due to invalid dates")
+
+    print("Date column converted to datetime")
 
     return df
