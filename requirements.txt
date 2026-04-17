@@ -1,11 +1,34 @@
+#==================
+# Data Manipulation
+#==================
 pandas
 numpy
+
+#===================
+# Data Visualization
+#===================
 matplotlib
 seaborn
+
+#==================
+# Machine Learning
+#==================
 scikit-learn
 xgboost
+
+#========================
+# Time Series Forecasting
+#========================
 prophet
-joblib
-scipy
 statsmodels
+
+#==================
+# MODEL PERSISTENCE
+#==================
+joblib
+
+# ======================
+# STATISTICS & UTILITIES
+# ======================
+scipy
 tqdm
