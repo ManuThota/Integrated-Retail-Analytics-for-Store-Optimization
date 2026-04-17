@@ -60,7 +60,10 @@ def test_anomaly_detection_pipeline():
         # ----------------------------------------------------
         # Step 3: Remove Outliers (IQR)
         # ----------------------------------------------------
-        df_cleaned = remove_outliers_iqr(df)
+        df_cleaned, lower_bound, upper_bound = remove_outliers_iqr(
+            df,
+            return_bounds=True
+        )
 
         cleaned_rows = df_cleaned.shape[0]
 
@@ -68,16 +71,10 @@ def test_anomaly_detection_pipeline():
 
         print(f"(✓) -> Outlier removal validated | Rows removed: {original_rows - cleaned_rows}")
 
-        # ----------------------------------------------------
-        # Step 4: Validate No Outliers Remain
-        # ----------------------------------------------------
-        Q1 = df_cleaned["Weekly_Sales"].quantile(0.25)
-        Q3 = df_cleaned["Weekly_Sales"].quantile(0.75)
-        IQR = Q3 - Q1
 
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
-
+        # ----------------------------------------------------
+        # Step 4: Validate Using SAME Bounds
+        # ----------------------------------------------------
         remaining_outliers = df_cleaned[
             (df_cleaned["Weekly_Sales"] < lower_bound) |
             (df_cleaned["Weekly_Sales"] > upper_bound)
@@ -85,7 +82,7 @@ def test_anomaly_detection_pipeline():
 
         assert remaining_outliers.shape[0] == 0, "(✕) -> Outliers still present after removal"
 
-        print("(✓) -> No outliers remain after removal")
+        print("(✓) -> Outlier removal correctness validated (same bounds)")
 
         # ----------------------------------------------------
         # Step 5: Time-Based Anomaly Detection
