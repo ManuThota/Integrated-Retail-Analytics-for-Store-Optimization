@@ -65,7 +65,6 @@ TEST_SIZE = 0.2
 # ============================================================
 
 DATE_COLUMN = "Date"
-TARGET_COLUMN = "Weekly_Sales"
 
 # Time-based features
 TIME_FEATURES = ["Year", "Month", "Week"]
