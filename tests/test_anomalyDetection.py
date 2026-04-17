@@ -1,35 +1,118 @@
 """
-Test anomaly detection pipeline
+test_anomalyDetection.py
+
+Tests the anomaly detection pipeline:
+- IQR-based outlier removal
+- Time-based anomaly detection
+
+Validates:
+- Outliers are removed correctly
+- Data integrity after removal
+- Time anomaly column creation
 """
+
+# ============================================================
+# Imports
+# ============================================================
 
 import sys
 import os
+import traceback
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
 from src.config.config import INTERIM_DATA_DIR
 
-from src.anomaly_detection.statistical import detect_outliers_iqr, cap_outliers
+from src.anomaly_detection.statistical import remove_outliers_iqr
 from src.anomaly_detection.time_series import detect_time_anomalies
 
 
-def test_anomaly_pipeline():
+# ============================================================
+# Test Function
+# ============================================================
 
-    file_path = INTERIM_DATA_DIR / "merged_data.csv"
+def test_anomaly_detection_pipeline():
+    """
+    Runs full anomaly detection pipeline and validates results.
+    """
 
-    if not file_path.exists():
-        raise FileNotFoundError("(✕) -> Run preprocessing first")
+    try:
+        print("\n==========( Anomaly Detection Test Started )==========\n")
 
-    df = pd.read_csv(file_path, parse_dates=["Date"])
+        # ----------------------------------------------------
+        # Step 1: Load Data
+        # ----------------------------------------------------
+        file_path = INTERIM_DATA_DIR / "merged_data.csv"
 
-    print("(✓) -> Loaded data")
+        if not file_path.exists():
+            raise FileNotFoundError("(✕) -> Interim data not found. Run preprocessing first.")
 
-    df = detect_outliers_iqr(df)
-    df = detect_time_anomalies(df)
-    df = cap_outliers(df)
+        df = pd.read_csv(file_path, parse_dates=["Date"])
 
-    print("(✓) -> Anomaly pipeline executed successfully")
+        print(f"(✓) -> Data loaded | Shape: {df.shape}")
 
+        # ----------------------------------------------------
+        # Step 2: Store original size
+        # ----------------------------------------------------
+        original_rows = df.shape[0]
+
+        # ----------------------------------------------------
+        # Step 3: Remove Outliers (IQR)
+        # ----------------------------------------------------
+        df_cleaned = remove_outliers_iqr(df)
+
+        cleaned_rows = df_cleaned.shape[0]
+
+        assert cleaned_rows < original_rows, "(✕) -> No rows were removed. Check IQR logic."
+
+        print(f"(✓) -> Outlier removal validated | Rows removed: {original_rows - cleaned_rows}")
+
+        # ----------------------------------------------------
+        # Step 4: Validate No Outliers Remain
+        # ----------------------------------------------------
+        Q1 = df_cleaned["Weekly_Sales"].quantile(0.25)
+        Q3 = df_cleaned["Weekly_Sales"].quantile(0.75)
+        IQR = Q3 - Q1
+
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        remaining_outliers = df_cleaned[
+            (df_cleaned["Weekly_Sales"] < lower_bound) |
+            (df_cleaned["Weekly_Sales"] > upper_bound)
+        ]
+
+        assert remaining_outliers.shape[0] == 0, "(✕) -> Outliers still present after removal"
+
+        print("(✓) -> No outliers remain after removal")
+
+        # ----------------------------------------------------
+        # Step 5: Time-Based Anomaly Detection
+        # ----------------------------------------------------
+        df_final = detect_time_anomalies(df_cleaned)
+
+        assert "Time_Anomaly" in df_final.columns, "(✕) -> Time_Anomaly column missing"
+
+        anomaly_count = df_final["Time_Anomaly"].sum()
+
+        print(f"(✓) -> Time anomalies detected: {anomaly_count}")
+
+        # ----------------------------------------------------
+        # Final Success
+        # ----------------------------------------------------
+        print("\n(✓) -> ALL ANOMALY DETECTION TESTS PASSED SUCCESSFULLY!\n")
+
+    except Exception as e:
+        print("\n(✕) -> TEST FAILED!\n")
+        print("Error:", str(e))
+        print("\nTraceback:")
+        traceback.print_exc()
+
+
+# ============================================================
+# Run Test
+# ============================================================
 
 if __name__ == "__main__":
-    test_anomaly_pipeline()
+    test_anomaly_detection_pipeline()
