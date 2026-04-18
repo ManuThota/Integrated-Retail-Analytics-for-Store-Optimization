@@ -1,99 +1,94 @@
 """
-feature_builder.py
+Feature Builder Module
+=======================
+Constructs derived (engineered) features from the raw / cleaned dataset
+beyond what simple column selects provide.
 
-Handles feature creation and dataset preparation:
-- Time features (Year, Month, Week)
-- ML dataset creation
-- Time-series dataset creation
+Engineering rationale (from notebook analysis)
+────────────────────────────────────────────────
+* **Temporal features** (Year / Month / Week): the date of a shopping week
+  is a strong proxy for seasonal demand and macroeconomic conditions.
+* **Markdown aggregates** (TotalMarkDown / ActiveMarkDowns): raw MarkDown1-5
+  values are sparse; aggregating them captures total promotional pressure and
+  the *count* of active promotions — two distinct business signals.
+
+These features are applied to the *cleaned* but un-transformed DataFrame
+(before log1p of Weekly_Sales) so they operate on the original scale.
 """
 
+import logging
+
 import pandas as pd
-import numpy as np
+
+logger = logging.getLogger(__name__)
+
+#: MarkDown columns present in the Walmart retail dataset.
+_MARKDOWN_COLS = ["MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5"]
 
 
-def handle_negative_sales(df: pd.DataFrame) -> pd.DataFrame:
+def build_time_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Extract ``Year``, ``Month``, and ISO calendar ``Week`` from the
+    ``Date`` column.
+
+    The raw date string (DD-MM-YYYY) is parsed with ``dayfirst=True`` to
+    avoid month/day confusion.  The resulting temporal columns give the
+    Random Forest direct access to seasonal and yearly patterns.
+
+    Args:
+        df: DataFrame containing a ``Date`` column.
+
+    Returns:
+        Copy of *df* with ``Year``, ``Month``, and ``Week`` columns added.
+        The raw ``Date`` column is **retained** here; dropping it is left to
+        :func:`src.data_preprocessing.transformation.transform`.
     """
-    Removes rows where Weekly_Sales is negative.
-
-    This ensures:
-    - Valid log transformation
-    - Clean target distribution
-    """
-
     df = df.copy()
 
-    negative_count = (df["Weekly_Sales"] < 0).sum()
+    if "Date" not in df.columns:
+        logger.warning("'Date' column not found; skipping time feature extraction.")
+        return df
 
-    print(f"(✓) -> Negative sales detected: {negative_count}")
-
-    df = df[df["Weekly_Sales"] >= 0]
-
-    print(f"(✓) -> Negative sales removed | New shape: {df.shape}")
-
-    return df
-
-
-def create_log_target(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Creates log-transformed target variable.
-
-    Adds:
-    - Weekly_Sales_Log
-    """
-
-    df = df.copy()
-
-    df["Weekly_Sales_Log"] = np.log1p(df["Weekly_Sales"])
-
-    print("(✓) -> Log transformation applied on target")
-
-    return df
-
-def create_time_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Creates time-based features from Date column.
-    """
-
-    df = df.copy()
-
-    # Week (important for modeling)
-    df["Week"] = df["Date"].dt.isocalendar().week.astype(int)
-
-    # Year and Month
-    df["Year"] = df["Date"].dt.year
+    logger.info("Building temporal features (Year, Month, Week) from Date ...")
+    df["Date"]  = pd.to_datetime(df["Date"], dayfirst=True)
+    df["Year"]  = df["Date"].dt.year
     df["Month"] = df["Date"].dt.month
-
-    print("(✓) -> Time-based feature creation completed")
+    df["Week"]  = df["Date"].dt.isocalendar().week.astype(int)
 
     return df
 
 
-def create_ml_dataset(df: pd.DataFrame) -> pd.DataFrame:
+def build_markdown_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate the five MarkDown columns into two synthetic features.
+
+    The individual MarkDown1-5 values capture *which* promotion type was
+    applied, but the model also benefits from knowing:
+      - ``TotalMarkDown``  : total promotional investment in a given week.
+      - ``ActiveMarkDowns``: number of distinct promotion types active.
+
+    NaN values are treated as 0 (no promotion) before aggregation, which
+    is consistent with the cleaning step in ``cleaning.py``.
+
+    Args:
+        df: DataFrame containing MarkDown1-5 columns (may contain NaNs).
+
+    Returns:
+        Copy of *df* with two new columns: ``TotalMarkDown`` and
+        ``ActiveMarkDowns``.
     """
-    Creates dataset for machine learning models.
-    Drops Date column.
-    """
+    df = df.copy()
+    available_md = [c for c in _MARKDOWN_COLS if c in df.columns]
 
-    df_ml = df.drop("Date", axis=1)
+    if not available_md:
+        logger.warning("No MarkDown columns found; skipping markdown feature build.")
+        return df
 
-    print("(✓) -> ML dataset created")
+    logger.info(
+        "Building markdown aggregate features from %d MarkDown columns ...",
+        len(available_md),
+    )
+    md_df = df[available_md].fillna(0)
 
-    return df_ml
+    df["TotalMarkDown"]   = md_df.sum(axis=1)
+    df["ActiveMarkDowns"] = (md_df > 0).sum(axis=1)
 
-
-def create_time_series_dataset(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Creates dataset for time-series models.
-    """
-
-    df_ts = df.copy()
-
-    # Sort (VERY IMPORTANT)
-    df_ts = df_ts.sort_values(by=["Store", "Dept", "Date"])
-
-    # Set index
-    df_ts.set_index("Date", inplace=True)
-
-    print("(✓) -> Time-series dataset created")
-
-    return df_ts
+    return df
