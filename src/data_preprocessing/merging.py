@@ -1,50 +1,45 @@
 """
-merging.py
+Merging Module
+===============
+Joins the three raw DataFrames into one unified dataset.
 
-Handles merging of:
-- Sales data
-- Store data
-- External features data
+Merge strategy (mirrors the notebook):
+  1. sales   LEFT JOIN stores   ON Store
+  2. (1)     LEFT JOIN features ON Store + Date + IsHoliday
 """
-#=====================
-# Importing Libraries
-#=====================
+
+import logging
+
 import pandas as pd
 
-#============================================================
-# Merging the Datasets
-#============================================================
-def merge_datasets(sales_df, stores_df, features_df):
+logger = logging.getLogger(__name__)
 
-    print("Merging datasets...")
 
-    # Debug: check duplicates
-    print("\nChecking key uniqueness...")
+def merge_datasets(
+    sales_df: pd.DataFrame,
+    stores_df: pd.DataFrame,
+    features_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """Merge all three raw DataFrames into a single unified DataFrame.
 
-    sales_duplicates = sales_df.duplicated(subset=["Store", "Date"]).sum()
-    features_duplicates = features_df.duplicated(subset=["Store", "Date"]).sum()
+    Args:
+        sales_df:    Raw sales DataFrame.
+        stores_df:   Raw stores DataFrame.
+        features_df: Raw features DataFrame.
 
-    print(f"Sales duplicates (Store, Date): {sales_duplicates}")
-    print(f"Features duplicates (Store, Date): {features_duplicates}")
+    Returns:
+        Merged DataFrame.
+    """
+    logger.info("Merging sales with stores ...")
+    merged = pd.merge(sales_df, stores_df, on="Store", how="left")
 
-    # Merge sales + features
-    df = pd.merge(
-        sales_df,
+    logger.info("Merging with features ...")
+    merged = pd.merge(
+        merged,
         features_df,
-        on=["Store", "Date"],
+        on=["Store", "Date", "IsHoliday"],
         how="left",
-        validate="many_to_one" 
     )
 
-    # Merge stores
-    df = pd.merge(
-        df,
-        stores_df,
-        on="Store",
-        how="left",
-        validate="many_to_one"
-    )
-
-    print(f"(✓) ->Merging completed | Shape: {df.shape}")
-
-    return df
+    logger.info("Merge complete – shape: %s", merged.shape)
+    return merged
