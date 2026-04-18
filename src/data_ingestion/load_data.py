@@ -1,119 +1,81 @@
 """
-load_data.py
+Data Ingestion Module
+======================
+Loads the three raw CSV datasets:
+  - sales.csv     : Weekly store-department sales data
+  - stores.csv    : Store metadata (Type, Size)
+  - features.csv  : Macroeconomic and promotional features
 
-This module handles all data ingestion tasks:
-- Loading raw datasets
-- Validating file existence
-- Basic sanity checks
-
+All file paths are resolved from ``src/config/config.py``,
+so the loader is portable across environments.
 """
 
-#========================
-# Importing Libraries
-#========================
+import logging
+
 import pandas as pd
-from pathlib import Path
+
+from src.config.config import SALES_CSV, STORES_CSV, FEATURES_CSV
+
+logger = logging.getLogger(__name__)
 
 
-#==============================
-# Import paths from config
-#==============================
+# ─────────────────────────────────────────────────────────────────────────────
+# Main Flow
+# ─────────────────────────────────────────────────────────────────────────────
 
-from src.config.config import (
-    SALES_DATA_PATH,
-    STORES_DATA_PATH,
-    FEATURES_DATA_PATH
-)
-
-#================================================================
-# Checking the files existance
-#================================================================
-
-def check_file_exists(file_path: Path) -> None:
-    """
-    Checks whether a given file exists.
+def load_sales(path=None) -> pd.DataFrame:
+    """Load the raw weekly-sales dataset.
 
     Args:
-        file_path (Path): Path to the file
-
-    Raises:
-        FileNotFoundError: If file does not exist
-    """
-    if not file_path.exists():
-        raise FileNotFoundError(f"(✕) -> File not found: {file_path}")
-
-
-#======================================================================
-# Loading the Datasets into Pandas Dataframe
-#======================================================================
-def load_csv(file_path: Path) -> pd.DataFrame:
-    """
-    Loads a CSV file into a pandas DataFrame.
-
-    Args:
-        file_path (Path): Path to the CSV file
+        path: Optional explicit file path. Defaults to ``data/raw/sales.csv``.
 
     Returns:
-        pd.DataFrame: Loaded DataFrame
+        DataFrame with columns: Store, Dept, Date, Weekly_Sales, IsHoliday.
     """
-    try:
-        df = pd.read_csv(file_path)
-        print(f"(✓) -> Loaded: {file_path.name} | Shape: {df.shape}")
-        return df
-    except Exception as e:
-        raise RuntimeError(f"(▲) -> Error loading {file_path.name}: {e}")
+    file_path = path or SALES_CSV
+    logger.info("Loading sales data from: %s", file_path)
+    df = pd.read_csv(file_path)
+    logger.info("Sales data loaded – shape: %s", df.shape)
+    return df
 
-#===========================================================
-# Validating the Dataframe
-#===========================================================
-def validate_dataframe(df: pd.DataFrame, name: str) -> None:
-    """
-    Performs basic validation on the DataFrame.
+
+def load_stores(path=None) -> pd.DataFrame:
+    """Load the store-metadata dataset.
 
     Args:
-        df (pd.DataFrame): DataFrame to validate
-        name (str): Name of dataset
-    """
-    if df.empty:
-        raise ValueError(f"(▲) -> {name} is empty!")
-
-    print(f"(✓) -> {name} validation passed")
-    print(f"Columns: {list(df.columns)}\n")
-
-
-#==================================================
-# Main Function to load the datasets
-#==================================================
-def load_all_data():
-    """
-    Main function to load all datasets.
+        path: Optional explicit file path. Defaults to ``data/raw/stores.csv``.
 
     Returns:
-        tuple: (sales_df, stores_df, features_df)
+        DataFrame with columns: Store, Type, Size.
     """
-
-    print("==========( Data Ingestion Started )==========")
-
-    # Step 1: Check file existence
-    check_file_exists(SALES_DATA_PATH)
-    check_file_exists(STORES_DATA_PATH)
-    check_file_exists(FEATURES_DATA_PATH)
-    print("----------------------------------------------")
-    # Step 2: Load datasets
-    sales_df = load_csv(SALES_DATA_PATH)
-    stores_df = load_csv(STORES_DATA_PATH)
-    features_df = load_csv(FEATURES_DATA_PATH)
-    print("----------------------------------------------")
-    # Step 3: Validate datasets
-    validate_dataframe(sales_df, "Sales Data")
-    validate_dataframe(stores_df, "Stores Data")
-    validate_dataframe(features_df, "Features Data")
-
-    print("==========( Data Ingestion Ended )==========")
-
-    return sales_df, stores_df, features_df
+    file_path = path or STORES_CSV
+    logger.info("Loading stores data from: %s", file_path)
+    df = pd.read_csv(file_path)
+    logger.info("Stores data loaded – shape: %s", df.shape)
+    return df
 
 
-# Run independently for testing
-if __name__ == "__main__":
-    load_all_data()
+def load_features(path=None) -> pd.DataFrame:
+    """Load the economic / promotional features dataset.
+
+    Args:
+        path: Optional explicit file path. Defaults to ``data/raw/features.csv``.
+
+    Returns:
+        DataFrame with columns: Store, Date, Temperature, Fuel_Price,
+        MarkDown1-5, CPI, Unemployment, IsHoliday.
+    """
+    file_path = path or FEATURES_CSV
+    logger.info("Loading features data from: %s", file_path)
+    df = pd.read_csv(file_path)
+    logger.info("Features data loaded – shape: %s", df.shape)
+    return df
+
+
+def load_all_raw() -> tuple:
+    """Convenience wrapper – load all three raw datasets in one call.
+
+    Returns:
+        Tuple of (sales_df, stores_df, features_df).
+    """
+    return load_sales(), load_stores(), load_features()
