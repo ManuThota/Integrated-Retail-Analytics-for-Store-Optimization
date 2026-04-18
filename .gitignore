@@ -26,19 +26,22 @@ data/processed/*
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 
-#=======
+#============
 # Models
-#=======
+#============
 models/*.pkl
 
-#========
+#=================
 # Reports
-#========
-reports/figures/*
-reports/*.json
-reports/*.txt
+#=================
+reports/figures/*.png
+reports/metrics.json
+reports/insights.txt
+reports/cv_results.txt
+reports/tuning_results.txt
 
 #=====================
 # Notebook checkpoints
 #=====================
 .ipynb_checkpoints/
+*.ipynb_checkpoints
