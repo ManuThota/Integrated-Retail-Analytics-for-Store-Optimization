@@ -150,8 +150,13 @@ Integrated-Retail-Analytics-for-Store-Optimization/
 ├── data/
 │   ├── raw/ <- Place all the dataset files here
 ```
+### 6. Run Doctor 
 
-### 6. Run the full pipeline
+```bash
+python doctor.py
+```
+
+### 7. Run the full pipeline
 
 ```bash
 python main.py
