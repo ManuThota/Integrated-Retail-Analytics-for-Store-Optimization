@@ -41,6 +41,11 @@ reports/cv_results.txt
 reports/tuning_results.txt
 
 #=====================
+# Logs
+#=====================
+logs/*.log
+
+#=====================
 # Notebook checkpoints
 #=====================
 .ipynb_checkpoints/
