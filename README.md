@@ -180,49 +180,49 @@ This executes all 8 stages and writes all outputs to `models/`, `reports/`, and 
 
 ## End-to-End Workflow
 1. **Data Ingestion**
-- Load sales, store, and external datasets
-- Validate structure and schema
+    - Load sales, store, and external datasets
+    - Validate structure and schema
 2. **Data Preprocessing**
-- Convert date formats
-- Merge datasets
-- Handle missing values (MarkDown → 0)
-- Remove duplicate columns
-- Save:
-    - interim/merged_data.csv
-    - processed/processed_data.csv
+    - Convert date formats
+    - Merge datasets
+    - Handle missing values (MarkDown → 0)
+    - Remove duplicate columns
+    - Save:
+        - interim/merged_data.csv
+        - processed/processed_data.csv
 3. **Anomaly Detection**
-- IQR-based outlier removal
-- Time-based anomaly detection
-- Cleaned dataset for modeling
+    - IQR-based outlier removal
+    - Time-based anomaly detection
+    - Cleaned dataset for modeling
 4. **Feature Engineering**
-- One-hot encoding (Store Type)
-- Time features (Year, Month, Week)
-- Negative sales removal
-- Log transformation of target variable
-- Final datasets:
-    - final_data.csv
+    - One-hot encoding (Store Type)
+    - Time features (Year, Month, Week)
+    - Negative sales removal
+    - Log transformation of target variable
+    - Final datasets:
+        - final_data.csv
 5. **Machine Learning**
-- Model: Random Forest Regressor
-- Train-test split
-- Evaluation metrics:
-    - RMSE
-    - MAE
-    - R² Score
-- Cross-validation
-- Hyperparameter tuning (RandomizedSearchCV)
+    - Model: Random Forest Regressor
+    - Train-test split
+    - Evaluation metrics:
+        - RMSE
+        - MAE
+        - R² Score
+    - Cross-validation
+    - Hyperparameter tuning (RandomizedSearchCV)
 6. **Segmentation**
-- K-Means clustering
-- Store performance grouping
+    - K-Means clustering
+    - Store performance grouping
 7. **Market Basket Analysis**
-- Department-level correlation
-- Cross-selling insights
+    - Department-level correlation
+    - Cross-selling insights
 8. **External Factors Analysis**
-- CPI, Fuel Price, Unemployment impact
-- Minimal influence compared to internal features
+    - CPI, Fuel Price, Unemployment impact
+    - Minimal influence compared to internal features
 9. **Business Strategy**
-- Inventory optimization
-- Targeted promotions
-- Store-specific strategies
+    - Inventory optimization
+    - Targeted promotions
+    - Store-specific strategies
 
 ## Model
 
