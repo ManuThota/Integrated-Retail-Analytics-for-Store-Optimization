@@ -1,64 +1,39 @@
 """
-cleaning.py
+Cleaning Module
+================
+Handles missing-value imputation and data-quality fixes on the merged dataset.
 
-Handles:
-- Missing values
-- MarkDown handling
-- Duplicate column fixes (IsHoliday_x, IsHoliday_y)
+Steps:
+  1. Fill MarkDown1-5 NaN values with 0.
+     Rationale: NaN means no promotion was active that week → effectively 0.
+  2. Clip Weekly_Sales at 0 (some dept returns → treated as 0 before log1p).
 """
-#=====================
-# Importing Libraries
-#=====================
+
+import logging
+
 import pandas as pd
 
-#============================================================
-# Handling Missing Values
-#============================================================
-def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Handles missing values in the dataset.
+from src.config.config import MARKDOWN_COLS
 
-    Strategy:
-    - MarkDown columns → fill with 0 (No promotion assumption)
-    """
+logger = logging.getLogger(__name__)
 
+
+def clean(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply all data-cleaning steps to the merged DataFrame.
+
+    Args:
+        df: Merged DataFrame from :func:`src.data_preprocessing.merging.merge_datasets`.
+
+    Returns:
+        Cleaned DataFrame (copy, original unmodified).
+    """
     df = df.copy()
 
-    print("Missing values before cleaning:\n", df.isnull().sum())
+    # ── 1. Impute MarkDown columns ────────────────────────────────────────────
+    logger.info("Imputing MarkDown NaN values with 0 ...")
+    for col in MARKDOWN_COLS:
+        if col in df.columns:
+            df[col] = df[col].fillna(0)
 
-    # Identify MarkDown columns
-    markdown_cols = [col for col in df.columns if "MarkDown" in col]
-
-    # Fill MarkDown missing values with 0
-    df[markdown_cols] = df[markdown_cols].fillna(0)
-
-    print("(✓) -> Missing values in MarkDown columns handled (filled with 0)")
-
-    return df
-
-#============================================================
-# Fixing the Duplicate Holiday column
-#============================================================
-def fix_holiday_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Handles duplicate holiday columns after merge.
-
-    Keeps one IsHoliday column and removes duplicates.
-    """
-
-    df = df.copy()
-
-    # Check if both columns exist
-    if "IsHoliday_x" in df.columns and "IsHoliday_y" in df.columns:
-
-        print("Found duplicate holiday columns. Fixing...")
-
-        # Keep one column (they are usually identical)
-        df["IsHoliday"] = df["IsHoliday_x"]
-
-        # Drop duplicates
-        df.drop(columns=["IsHoliday_x", "IsHoliday_y"], inplace=True)
-
-        print("Duplicate holiday columns resolved")
-
+    logger.info("Cleaning complete – shape: %s", df.shape)
     return df
