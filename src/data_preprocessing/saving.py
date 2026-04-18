@@ -1,84 +1,42 @@
 """
-saving.py
+Saving Module
+==============
+Persists DataFrames at the interim and processed checkpoints.
 
-Handles saving datasets at different pipeline stages:
+  - ``save_interim(df)``   → ``data/interim/merged_data.csv``
+    Merged but un-transformed data (after merge, before clean/transform).
+    Useful for debugging and EDA on raw-merged data.
 
-1. Interim Data:
-   - After merging datasets
-   - Before cleaning
-
-2. Processed Data:
-   - After cleaning and preprocessing
-   - Ready for feature engineering / modeling
+  - ``save_processed(df)`` → ``data/processed/final_data.csv``
+    Fully cleaned and transformed data ready for modelling.
 """
 
+import logging
+
 import pandas as pd
-from pathlib import Path
 
-from src.config.config import (
-    INTERIM_DATA_DIR,
-    PROCESSED_DATA_DIR
-)
+from src.config.config import INTERIM_MERGED_CSV, PROCESSED_CSV
+
+logger = logging.getLogger(__name__)
 
 
-# ============================================================
-# Save Interim Data
-# ============================================================
-
-def save_interim_data(df: pd.DataFrame, filename: str = "merged_data.csv") -> None:
-    """
-    Saves merged dataset (before cleaning).
+def save_interim(df: pd.DataFrame) -> None:
+    """Persist the merged (pre-transform) DataFrame to ``data/interim/``.
 
     Args:
-        df (pd.DataFrame): Merged dataframe
-        filename (str): Output file name
+        df: Merged DataFrame (before cleaning / transformation).
     """
-
-    # Ensure directory exists
-    INTERIM_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    file_path = INTERIM_DATA_DIR / filename
-
-    df.to_csv(file_path, index=False)
-
-    print(f"(✓) -> Interim data saved at: {file_path}")
+    INTERIM_MERGED_CSV.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(INTERIM_MERGED_CSV, index=False)
+    logger.info("Interim data saved → %s", INTERIM_MERGED_CSV)
 
 
-# ============================================================
-# Save Processed Data
-# ============================================================
-
-def save_processed_data(df: pd.DataFrame, filename: str = "processed_data.csv") -> None:
-    """
-    Saves cleaned and preprocessed dataset.
+def save_processed(df: pd.DataFrame) -> None:
+    """Persist the fully preprocessed DataFrame to ``data/processed/``.
 
     Args:
-        df (pd.DataFrame): Cleaned dataframe
-        filename (str): Output file name
+        df: Fully cleaned and transformed DataFrame.
     """
-
-    # Ensure directory exists
-    PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    file_path = PROCESSED_DATA_DIR / filename
-
-    df.to_csv(file_path, index=False)
-
-    print(f"(✓) -> Processed data saved at: {file_path}")
-
-# ============================================================
-# Save Final ML Dataset
-# ============================================================
-
-def save_ml_dataset(df: pd.DataFrame, filename: str = "ml_dataset.csv") -> None:
-    """
-    Saves final machine learning dataset.
-    """
-
-    PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    file_path = PROCESSED_DATA_DIR / filename
-
-    df.to_csv(file_path, index=False)
-
-    print(f"(✓) -> ML dataset saved at: {file_path}")
+    PROCESSED_CSV.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(PROCESSED_CSV, index=False)
+    logger.info("Processed data saved → %s", PROCESSED_CSV)
