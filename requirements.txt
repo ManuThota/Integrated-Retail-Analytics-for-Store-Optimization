@@ -14,21 +14,9 @@ seaborn
 # Machine Learning
 #==================
 scikit-learn
-xgboost
 
-#========================
-# Time Series Forecasting
-#========================
-prophet
-statsmodels
 
 #==================
 # MODEL PERSISTENCE
 #==================
 joblib
-
-# ======================
-# STATISTICS & UTILITIES
-# ======================
-scipy
-tqdm
